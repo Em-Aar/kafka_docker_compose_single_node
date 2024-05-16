@@ -45,19 +45,19 @@ Let's start with some theory.
 KAFKA_LISTENERS:'CONTROLLER://:29093,PLAINTEXT_HOST://:9092,PLAINTEXT://:19092'
 ~~~ 
 
-> ***CONTROLLER://:29093:** 
+> **CONTROLLER://:29093:** 
 > * The listener 'CONTROLLER' is assigned port 29093. The controller is responsible for cluster management tasks like partition leader election, maintaining the cluster state, and handling broker failures. All the controller-related traffic will go through this port (controller-related traffic). This tells Kafka to listen for connections from other brokers (or itself in this case) on port 29093 using the internal `CONTROLLER` protocol for cluster management. 
 > * Here, a question can be raised why '2' added before '9093'. The answer is, for current scenario, we have a single broker  in our cluster, configured at '9092' on our docker network, but we can have multiple brokers in our cluster. There may be a case where other broker is 	assigned port '9093' in our docker network. So to avoid such port conflict, we assigned port '29093' to our 'CONTROLLER' endpoint/listener. 
 > * The port 29093 is arbitrarily chosen and does not need to match the external port 9092. The prefix 2 is simply a convention to differentiate this internal control port from the external client ports. It's not a requirement, but it helps to avoid port conflicts and makes the configuration clearer. 
 > * In multi-broker Kafka setups, each broker typically gets its own dedicated internal port for inter-broker communication. This helps distinguish traffic between different brokers. In a single-broker setup, it's not strictly necessary, but some Kafka configurations still expect this pattern. We might see port numbers like `19092` or `29092` even though there's only one broker.*
 > * *In **KRaft mode**, this listener plays a crucial role as each broker takes on the controller responsibilities.*
 
-> ***PLAINTEXT_HOST://:9092:** 
+> **PLAINTEXT_HOST://:9092:** 
 > * This is the listener that external clients will use to connect to the Kafka broker. It's mapped directly to the container's port 9092, which is the standard port for Kafka. This mapping allows clients outside the container to communicate with the Kafka broker using the standard port.
 >* 'PLAINTEXT' is named after the security protocol being used. We have to keep in mind that external client connections (producers, consumers) comes from outside the Docker network. Here, it is using the `PLAINTEXT` protocol (no encryption) on port 9092. We can check the security protocols mapping command KAFKA_LISTENER_SECURITY_PROTOCOL_MAP' command. If this would have mapped SSL, we could've name it 'SSL_HOST'. 
 > * All our external communication would be at port:9092. This is the standard port for client communication. It's where producers and consumers connect to interact with Kafka topics.*
 
-> ***PLAINTEXT://:19092:** 
+> **PLAINTEXT://:19092:** 
 > * This is our network endpoint/listener for inter-broker communication (i.e. communication related to data, other than controller-related). 'PLAINTEXT' is named after the security protocol being used. We can check the security protocols mapping command 'KAFKA_LISTENER_SECURITY_PROTOCOL_MAP' command. Since this communication is internal (inside docker network), we can use 'PLAINTEXT' 	protocol which means (without encryption).
 >  * We use this listener for data replication and coordination between brokers that isn't specifically controller-related. This can help separate control traffic from data traffic, reducing the risk of bottlenecks and ensuring smoother operation.
 >  It's how brokers share data, replicate messages, and keep each other informed about the state of partitions.
