@@ -33,11 +33,11 @@ Let's start with some theory.
 ~~~
 
 
-> ***PLAINTEXT, SSL, SALS** are the network security protocols. For example, Plaintext means that there would be no encryption (not recommended for production, can only be used over a secure private network e.g. for broker internal network). For convenience, the name the listeners on the basis of these security protocols being used by them (a listener named 'PLAINTEXT') or the specific role the listener performs (a listener named 'CONTROLLER').*
+> ***PLAINTEXT, SSL, SALS** are the network security protocols. For example, Plaintext means that there would be no encryption (not recommended for production, can only be used over a secure private network e.g. for broker internal network). For convenience, the name the listeners on the basis of these security protocols being used by them (a listener named 'PLAINTEXT') or the specific role the listener performs (a listener named 'CONTROLLER'). However, we are not stick to these, we can name as we like.*
 > 
 > ***CONTROLLER** is the Network Endpoint/Listener Name that will be used for controller communication by Kafka.(Kafka uses this to managae cluster).*
 > 
-> ***PLAINTEXT** is the Network Endpoint/Listener Name that will be used for communication related to data-related communication (To separate contoller-related traffic and data related traffic between brokers).*
+> ***PLAINTEXT** is the Network Endpoint/Listener Name that will be used for ata-related communication (To separate contoller-related traffic and data related traffic between brokers).*
 
 
 2- **Port:** The network port on which the listener accepts connections.
@@ -60,11 +60,12 @@ KAFKA_LISTENERS:'CONTROLLER://:29093,PLAINTEXT_HOST://:9092,PLAINTEXT://:19092'
 > **PLAINTEXT://:19092:** 
 > * This is our network endpoint/listener for inter-broker communication (i.e. communication related to data, other than controller-related). 'PLAINTEXT' is named after the security protocol being used. We can check the security protocols mapping command 'KAFKA_LISTENER_SECURITY_PROTOCOL_MAP' command. Since this communication is internal (inside docker network), we can use 'PLAINTEXT' 	protocol which means (without encryption).
 >  * We use this listener for data replication and coordination between brokers that isn't specifically controller-related. This can help separate control traffic from data traffic, reducing the risk of bottlenecks and ensuring smoother operation.
+> * *If we have producers and consumers in the same docker network, this endpoint can also be used to connect them with broker*.
 >  It's how brokers share data, replicate messages, and keep each other informed about the state of partitions.
 > * This seems redundant in a single-broker setup but is likely included for consistency with configurations expecting internal broker communication.
-> * ***Important Note:** In a single-broker configuration, Kafka functions correctly even if we remove the `PLAINTEXT://:19092` listener. The `PLAINTEXT_HOST://:9092` listener is sufficient for both client and internal communication.*
 
-Remember, the `CONTROLLER://:29093` endpoint is used by Kafka and Kafka will communicate with all the brokers through this. While `PLAINTEXT://:19092` is the endpoint which is used by brokers to talk to each other.
+
+Remember, the `CONTROLLER://:29093` endpoint is used by Kafka and Kafka will communicate with all the brokers through this. While `PLAINTEXT://:19092` is the endpoint which is used by brokers to talk to each other or the producers and consumers within same network (docker network).
 
 The reason for using different port numbers like 29093 and 19092 instead of just incrementing the last digit (e.g., 29092) is to provide a clear separation of concerns and to prevent port conflicts. Each listener serves a different purpose, and their port numbers help identify their roles within the Kafka ecosystem.
 
