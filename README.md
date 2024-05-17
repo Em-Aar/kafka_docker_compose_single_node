@@ -62,7 +62,7 @@ KAFKA_LISTENERS:'CONTROLLER://:29093,PLAINTEXT_HOST://:9092,PLAINTEXT://:19092'
 >  * We use this listener for data replication and coordination between brokers that isn't specifically controller-related. This can help separate control traffic from data traffic, reducing the risk of bottlenecks and ensuring smoother operation.
 > * *If we have producers and consumers in the same docker network, this endpoint can also be used to connect them with broker*.
 >  It's how brokers share data, replicate messages, and keep each other informed about the state of partitions.
-> * This seems redundant in a single-broker setup but is likely included for consistency with configurations expecting internal broker communication.
+
 
 
 Remember, the `CONTROLLER://:29093` endpoint is used by Kafka and Kafka will communicate with all the brokers through this. While `PLAINTEXT://:19092` is the endpoint which is used by brokers to talk to each other or the producers and consumers within same network (docker network).
